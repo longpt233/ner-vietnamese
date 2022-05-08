@@ -1,0 +1,2 @@
+# ner-vietnamese
+Named Entity Recognition for Vietnamese Language - VLSP 2021
