@@ -1,9 +1,40 @@
 # ner-vietnamese
-Named Entity Recognition for Vietnamese Language - VLSP 2021
+Named Entity Recognition for Vietnamese Language   
+Method: 
+```
+CRF
+Bi-LSTM
+BERT
+```
 
-# data 
-https://vlsp.org.vn
+# dataset
+Data used for this project was downloaded from [VLSP dataset](https://vlsp.org.vn)
 
-### data format
+# structure
 
+```
+-
+|-- data
+|    |-- data-muc
+|-- src
+     |-- LSTM ...
+
+```
 # how to run
+
+```
+python hello.py
+```
+
+# result 
+
+| Model| CRF | Bi-LSTM | BERT |
+| :-: | :-: | :-: | :-: |
+| Train Accuracy | 0. | 0. | 0. |
+| Test Accuracy | 0. | 0. | 0. |
+
+# application
+
+```
+python app.py
+```
