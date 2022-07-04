@@ -1,0 +1,47 @@
+precision    recall  f1-score   support
+
+            ADDRESS      0.000     0.000     0.000         2
+           DATETIME      0.846     0.652     0.736       908
+      DATETIME-DATE      0.719     0.379     0.496       169
+ DATETIME-DATERANGE      0.077     0.017     0.028        59
+  DATETIME-DURATION      0.750     0.738     0.744       256
+       DATETIME-SET      0.000     0.000     0.000         1
+      DATETIME-TIME      0.444     0.174     0.250        23
+ DATETIME-TIMERANGE      0.167     0.018     0.032        56
+              EMAIL      0.500     1.000     0.667         1
+              EVENT      0.086     0.086     0.086        35
+          EVENT-CUL      0.500     0.023     0.043        44
+     EVENT-GAMESHOW      0.353     0.188     0.245        32
+      EVENT-NATURAL      0.000     0.000     0.000         0
+        EVENT-SPORT      0.378     0.400     0.389        35
+                 IP      0.000     0.000     0.000         0
+           LOCATION      0.290     0.197     0.235       711
+       LOCATION-GEO      0.333     0.138     0.195        29
+       LOCATION-GPE      0.585     0.564     0.574       880
+     LOCATION-STRUC      0.070     0.108     0.085        37
+      MISCELLANEOUS      0.255     0.162     0.198        74
+       ORGANIZATION      0.623     0.351     0.449      1872
+   ORGANIZATION-MED      0.909     0.357     0.513        28
+ORGANIZATION-SPORTS      0.367     0.165     0.228       200
+ ORGANIZATION-STOCK      0.000     0.000     0.000         3
+             PERSON      0.773     0.639     0.700      3100
+         PERSONTYPE      0.669     0.227     0.339      1114
+        PHONENUMBER      0.000     0.000     0.000         3
+            PRODUCT      0.317     0.075     0.122       611
+      PRODUCT-AWARD      0.000     0.000     0.000         6
+        PRODUCT-COM      0.490     0.051     0.092       492
+      PRODUCT-LEGAL      0.000     0.000     0.000        12
+           QUANTITY      0.506     0.093     0.157       929
+       QUANTITY-AGE      0.919     0.849     0.883        93
+       QUANTITY-CUR      0.934     0.624     0.748       319
+       QUANTITY-DIM      0.650     0.325     0.433        80
+       QUANTITY-NUM      0.188     0.386     0.253       345
+       QUANTITY-ORD      0.269     0.264     0.267        53
+       QUANTITY-PER      0.939     0.782     0.854       432
+       QUANTITY-TEM      1.000     0.231     0.375        13
+              SKILL      0.000     0.000     0.000         0
+                URL      1.000     0.724     0.840        29
+
+            micro avg      0.633     0.415     0.502     13086
+            macro avg      0.412     0.268     0.299     13086
+         weighted avg      0.625     0.415     0.477     13086

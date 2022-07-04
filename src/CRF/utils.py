@@ -78,9 +78,8 @@ def fix_age(words, labels):
                 labels[i] = 'I-QUANTITY-AGE'
     return words, labels
 
-def pre_process():
-    PREFIX_PATH = "/content/drive/MyDrive/20212/class/nlp/ner-vietnamese/data/final/conll/*"
-  
+def pre_process(data_source, data_path):
+
     Sentence = []
     Word = []
     POS = []
@@ -88,9 +87,10 @@ def pre_process():
     NER_main = []
     Ner_extension = []
     sent_idx = 0
-    files = glob.glob(PREFIX_PATH)
+    files = glob.glob(data_path + "/"+ data_source+ "/*.conll")
 
     for file in files:
+        # print(file)
         with open(file, 'r') as f:
             full_text = f.readlines()
             for i in range(len(full_text)):
@@ -99,7 +99,6 @@ def pre_process():
                     sent_idx += 1
                 elif '.' in full_text[i] and full_text[i + 1][0][0].isupper():
                     print(full_text[i + 1])
-              
                     sent_idx += 1
                 elif '\n' in full_text[i]:
                     sent_idx += 1
@@ -117,7 +116,7 @@ def pre_process():
                     if len(full_text[i]) == 5:
                         Ner_extension.append(full_text[i][4].replace('\n', ''))
                     else:
-                        Ner_extension.append('O')
+                        Ner_extension.append('O') 
         
     data = pd.DataFrame.from_dict({'Sentence': Sentence,'Word': Word, 'NER_main': NER_main, \
                                     'Ner_extension': Ner_extension})
@@ -133,49 +132,100 @@ def pre_process():
     words = data.words.tolist()
     labels = data.labels.tolist()
     
-    
-    words, labels = fix_percent(words, labels)
-    words, labels = fix_gb(words, labels)
-    words, labels = fix_distance(words, labels)
-    words, labels = fix_age(words, labels)
-    words, labels = fix_distance_vie(words, labels)
-    words, labels = fix_currency_vie(words, labels)
+    if data_source == 'train':
+        print('load train')
+        words, labels = fix_percent(words, labels)
+        words, labels = fix_gb(words, labels)
+        words, labels = fix_distance(words, labels)
+        words, labels = fix_age(words, labels)
+        words, labels = fix_distance_vie(words, labels)
+        words, labels = fix_currency_vie(words, labels)
     data = pd.DataFrame.from_dict({'sentence_id': sentence_id, 'words': words, 'labels': labels})
     return data
 
 
-def process_data(df, sentences):
-    # Xây dựng vocab cho word và tag
-    words = list(df['Word'].unique())
-    tags = list(df['Tag'].unique())
+def get_list_tag():
+  labels= ['B-PERSONTYPE',
+  'B-PERSON',
+  'B-ORGANIZATION',
+  'B-LOCATION-GPE',
+  'B-LOCATION',
+  'B-DATETIME',
+  'B-QUANTITY',
+  'B-DATETIME-DATE',
+  'B-PRODUCT',
+  'B-QUANTITY-AGE',
+  'B-DATETIME-SET',
+  'B-QUANTITY-NUM',
+  'B-MISCELLANEOUS',
+  'B-QUANTITY-PER',
+  'B-DATETIME-TIMERANGE',
+  'B-EVENT-CUL',
+  'B-QUANTITY-CUR',
+  'B-ORGANIZATION-STOCK',
+  'B-DATETIME-TIME',
+  'B-LOCATION-STRUC',
+  'B-ADDRESS',
+  'B-QUANTITY-ORD',
+  'B-DATETIME-DURATION',
+  'B-LOCATION-GEO',
+  'B-EVENT',
+  'B-SKILL',
+  'B-URL',
+  'B-QUANTITY-DIM',
+  'B-EVENT-SPORT',
+  'B-PRODUCT-LEGAL',
+  'B-ORGANIZATION-SPORTS',
+  'B-DATETIME-DATERANGE',
+  'B-QUANTITY-TEM',
+  'B-ORGANIZATION-MED',
+  'B-EVENT-GAMESHOW',
+  'B-EMAIL',
+  'B-PHONENUMBER',
+  'B-PRODUCT-COM',
+  'B-IP',
+  'B-EVENT-NATURAL',
+  'B-PRODUCT-AWARD']
 
-    # Tạo dict word to index, thêm 2 từ đặc biệt là Unknow và Padding
-    word2idx = {w : i + 2 for i, w in enumerate(words)}
-    word2idx["UNK"] = 1
-    word2idx["PAD"] = 0
+  return labels
 
-    # Tạo dict tag to index, thêm 1 tag đặc biệt và Padding
-    tag2idx = {t : i + 1 for i, t in enumerate(tags)}
-    tag2idx["PAD"] = 0
 
-    # Tạo 2 dict index to word và index to tag
-    idx2word = {i: w for w, i in word2idx.items()}
-    idx2tag = {i: w for w, i in tag2idx.items()}
+def word2features(sent, i):
+    word = sent[i][0] 
 
-    # Chuyển các câu về dạng vector of index
-    X = [[word2idx[w[0]] for w in s] for s in sentences]
-    # Padding các câu về max_len
-    X = pad_sequences(maxlen = max_len, sequences = X, padding = "post", value = word2idx["PAD"])
-    # Chuyển các tag về dạng index
-    y = [[tag2idx[w[2]] for w in s] for s in sentences]
-    # Tiền hành padding về max_len
-    y = pad_sequences(maxlen = max_len, sequences = y, padding = "post", value = tag2idx["PAD"])
+    features = {
+        'bias': 1.0,
+        'word.lower()': word.lower(),
+        'word[-3:]': word[-3:],
+        'word[-2:]': word[-2:],
+        'word.isupper()': word.isupper(),
+        'word.istitle()': word.istitle(),
+        'word.isdigit()': word.isdigit(), 
+    }
+    if i > 0:
+        word1 = sent[i-1][0] 
+        features.update({
+            '-1:word.lower()': word1.lower(),
+            '-1:word.istitle()': word1.istitle(),
+            '-1:word.isupper()': word1.isupper(), 
+        })
+    else:
+        features['BOS'] = True
 
-    # Chuyển y về dạng one-hot
-    num_tag = df['Tag'].nunique()
-    y = [to_categorical(i, num_classes = num_tag + 1) for i in y]
+    if i < len(sent)-1:
+        word1 = sent[i+1][0] 
+        features.update({
+            '+1:word.lower()': word1.lower(),
+            '+1:word.istitle()': word1.istitle(),
+            '+1:word.isupper()': word1.isupper(), 
+        })
+    else:
+        features['EOS'] = True
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.15)
+    return features
 
-    # Save data
-    return X_train, X_test, y_train, y_test, word2idx, tag2idx, idx2word, idx2tag, num_tag, words, tags
+def sent2features(sent):
+    return [word2features(sent, i) for i in range(len(sent))]
+
+def sent2labels(sent):
+    return [label for token, label in sent]

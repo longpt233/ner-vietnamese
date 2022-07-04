@@ -6,7 +6,7 @@ from keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 
-max_len = 75
+max_len = 400
 
 
 def remove_punct(word):
@@ -78,9 +78,8 @@ def fix_age(words, labels):
                 labels[i] = 'I-QUANTITY-AGE'
     return words, labels
 
-def pre_process():
-    PREFIX_PATH = "/content/drive/MyDrive/ner-vietnamese/data/final/conll/*.conll"
-  
+def pre_process(data_source, data_path):
+
     Sentence = []
     Word = []
     POS = []
@@ -88,9 +87,10 @@ def pre_process():
     NER_main = []
     Ner_extension = []
     sent_idx = 0
-    files = glob.glob(PREFIX_PATH)
+    files = glob.glob(data_path + "/"+ data_source+ "/*.conll")
 
     for file in files:
+        # print(file)
         with open(file, 'r') as f:
             full_text = f.readlines()
             for i in range(len(full_text)):
@@ -99,7 +99,6 @@ def pre_process():
                     sent_idx += 1
                 elif '.' in full_text[i] and full_text[i + 1][0][0].isupper():
                     print(full_text[i + 1])
-              
                     sent_idx += 1
                 elif '\n' in full_text[i]:
                     sent_idx += 1
@@ -117,7 +116,7 @@ def pre_process():
                     if len(full_text[i]) == 5:
                         Ner_extension.append(full_text[i][4].replace('\n', ''))
                     else:
-                        Ner_extension.append('O')
+                        Ner_extension.append('O') 
         
     data = pd.DataFrame.from_dict({'Sentence': Sentence,'Word': Word, 'NER_main': NER_main, \
                                     'Ner_extension': Ner_extension})
@@ -133,19 +132,24 @@ def pre_process():
     words = data.words.tolist()
     labels = data.labels.tolist()
     
-    
-    words, labels = fix_percent(words, labels)
-    words, labels = fix_gb(words, labels)
-    words, labels = fix_distance(words, labels)
-    words, labels = fix_age(words, labels)
-    words, labels = fix_distance_vie(words, labels)
-    words, labels = fix_currency_vie(words, labels)
+    if data_source == 'train':
+        print('load train')
+        words, labels = fix_percent(words, labels)
+        words, labels = fix_gb(words, labels)
+        words, labels = fix_distance(words, labels)
+        words, labels = fix_age(words, labels)
+        words, labels = fix_distance_vie(words, labels)
+        words, labels = fix_currency_vie(words, labels)
     data = pd.DataFrame.from_dict({'sentence_id': sentence_id, 'words': words, 'labels': labels})
     return data
 
 
-def process_data(df, sentences):
+def process_data(df):
     # Xây dựng vocab cho word và tag
+    agg = lambda s: [(w, t) for w, t in zip(s['words'].values.tolist(),
+                                        s['labels'].values.tolist())]
+    grouped = df.groupby("sentence_id").apply(agg)
+    sentences = [s for s in grouped]
     words = list(df['words'].unique())
     tags = list(df['labels'].unique())
 
@@ -175,11 +179,55 @@ def process_data(df, sentences):
     num_tag = df['labels'].nunique()
     y = [to_categorical(i, num_classes = num_tag + 1) for i in y]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.15)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, shuffle=False)
 
     # Save data
     return X_train, X_test, y_train, y_test, word2idx, tag2idx, idx2word, idx2tag, num_tag, words, tags
 
+def get_list_tag():
+  labels= ['B-PERSONTYPE',
+  'B-PERSON',
+  'B-ORGANIZATION',
+  'B-LOCATION-GPE',
+  'B-LOCATION',
+  'B-DATETIME',
+  'B-QUANTITY',
+  'B-DATETIME-DATE',
+  'B-PRODUCT',
+  'B-QUANTITY-AGE',
+  'B-DATETIME-SET',
+  'B-QUANTITY-NUM',
+  'B-MISCELLANEOUS',
+  'B-QUANTITY-PER',
+  'B-DATETIME-TIMERANGE',
+  'B-EVENT-CUL',
+  'B-QUANTITY-CUR',
+  'B-ORGANIZATION-STOCK',
+  'B-DATETIME-TIME',
+  'B-LOCATION-STRUC',
+  'B-ADDRESS',
+  'B-QUANTITY-ORD',
+  'B-DATETIME-DURATION',
+  'B-LOCATION-GEO',
+  'B-EVENT',
+  'B-SKILL',
+  'B-URL',
+  'B-QUANTITY-DIM',
+  'B-EVENT-SPORT',
+  'B-PRODUCT-LEGAL',
+  'B-ORGANIZATION-SPORTS',
+  'B-DATETIME-DATERANGE',
+  'B-QUANTITY-TEM',
+  'B-ORGANIZATION-MED',
+  'B-EVENT-GAMESHOW',
+  'B-EMAIL',
+  'B-PHONENUMBER',
+  'B-PRODUCT-COM',
+  'B-IP',
+  'B-EVENT-NATURAL',
+  'B-PRODUCT-AWARD']
+
+  return labels
 
 
 
